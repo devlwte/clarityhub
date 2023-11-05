@@ -68,11 +68,10 @@ class SavedTemp {
         if (result) {
             const keys = Object.keys(action);
             for (const clave of keys) {
-                let search = this._search(result, clave, action[clave], true);
-                if (search) {
-                    results.unshift(search)
-                }
-                
+                let search = this._search(result, clave, action[clave]);
+                for (const item of search) {
+                    results.unshift(item);
+                }                
             }
 
             return results;
