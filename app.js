@@ -64,6 +64,17 @@ async function openFileJson(file, existfile = false, value = "") {
     }
 }
 
+// copy files
+async function copyFile(origen, destino) {
+    try {
+        await fsextra.copy(origen, destino);
+        return true;
+    } catch (error) {
+        console.error(`Error al copiar el archivo: ${error.message}`);
+        return false;
+    }
+}
+
 // Window State
 function stateWin(windowId) {
     return windowStateKeeper({
@@ -329,31 +340,38 @@ app.on('ready', async () => {
     // argv
     const args = process.argv;
 
-    // Datos App
-    let appSelect = {};
-
     if (args.length < 2) {
-        // Server App
-        let mainServer = await serverbuilder.newServer({
-            name: "clarityhub",
-            routers: path.join(__dirname, "assets", "web", "clarityhub.js"),
-            port: 3000,
-            pathViews: path.join(__dirname, "assets", "web", "views"),
-            pathPublic: path.join(__dirname, "assets", "web", "public"),
-        }, "url");
 
+        // buscar homes
+        let ishome = saved.where("all-apps", { ishome: true });
 
         await createWindow({
-            windowID: 'clarityhub',
+            windowID: 'clarityhub_main',
             minWidth: 536,
             minHeight: 500,
-            title: "ClarityHub",
+            title: "ClarityHub: Install Home",
             show: false,
-            icon: path.join(__dirname, "assets", "iconos", "claritygub.ico"),
-            urlOrFile: mainServer,
+            icon: path.join(__dirname, "assets", "iconos", "clarityhub01.ico"),
+            urlOrFile: path.join(__dirname, "assets", "html", "install.html"),
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
+            },
+            extras: async () => {
+                // ID Ventana
+                app.setAppUserModelId(`app.clarityhub.main`);
+            },
+            sendDatas: (win) => {
+
+                // Puedes comunicar el error a la ventana utilizando IPC (Inter-Process Communication)
+                win.webContents.on('did-finish-load', () => {
+                    win.webContents.send('data-homes', {
+                        ishome,
+                        installed: saved.getSaved("file-db").installed,
+
+                    });
+                });
+
             },
             callback: (data) => {
 
@@ -410,15 +428,22 @@ app.on('ready', async () => {
                     }
                 }
 
-                // Download Img
-                await prompts.compressIMG(search.banner, {
-                    update: update_img,
-                    saveIn: path.join(__dirname, "apps", search.name, package_app.server.pathpublic),
-                    name: `${search.name}_banner_app`,
-                    saveTo: "jpeg",
-                    quality: 80,
-                    format: "jpeg",
-                });
+                // Verificar si el banner existe en lib
+                if (fs.existsSync(path.join(__dirname, "modules", "util-libraries", "libraries", "apps", "banners", search.name + ".jpg"))) {
+                    await copyFile(path.join(__dirname, "modules", "util-libraries", "libraries", "apps", "banners", search.name + ".jpg"), path.join(__dirname, "apps", search.name, package_app.server.pathpublic, `${search.name}_banner_app.jpg`));
+                } else {
+                    // Download Img
+                    await prompts.compressIMG(search.banner, {
+                        update: update_img,
+                        saveIn: path.join(__dirname, "apps", search.name, package_app.server.pathpublic),
+                        name: `${search.name}_banner_app`,
+                        saveTo: "jpeg",
+                        quality: 80,
+                        format: "jpeg",
+                    });
+                }
+
+
 
 
             },
@@ -497,6 +522,12 @@ ipcMain.handle('new-window', async (e, appsl, pack, urlserver) => {
 // Update App
 ipcMain.handle('update-app', async (e, appInfo) => {
     const clonar = await clonarRepositorioGit(appInfo.repo, path.join(__dirname, "temp", appInfo.name));
+    return clonar;
+})
+
+// Install App
+ipcMain.handle('new-app', async (e, appInfo) => {
+    const clonar = await clonarRepositorioGit(appInfo.repo, path.join(__dirname, "apps", appInfo.name));
     return clonar;
 })
 
