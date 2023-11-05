@@ -1,0 +1,244 @@
+html,
+body {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+body {
+    background-image: url('../img/terms4.png');
+    padding-bottom: 70px;
+}
+
+.body {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: auto;
+}
+
+/* Mneu */
+.menu-home {
+    width: 100%;
+    height: 70px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.911));
+    display: flex;
+    flex-wrap: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.menu-body-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.menu-body-left .logo {
+    font-size: 25px;
+    color: #fff;
+    padding: 10px;
+    cursor: default;
+}
+
+.menu-body-left ul {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.menu-body-left ul li {
+    list-style: none;
+    display: inline-block;
+}
+
+.menu-body-left ul li a {
+    line-height: 70px;
+    display: inline-block;
+    padding: 0 10px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 400;
+}
+
+/* apps home */
+.apps_home {
+    width: 100%;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.app_home{
+    width: 16.66666666666667%;
+    padding: 0 20px 20px 0;
+    transition: 0.3s all;
+}
+.app_home .item{
+    width: 100%;
+    padding-top: 120%;
+    background-color: black;
+    /* background-image: url('../../../modules/util-libraries/libraries/apps/iconos/clarityhub.svg'); */
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+    border-radius: 5px;
+    position: relative;
+}
+
+.footer-item{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.089), rgba(0, 0, 0, 0.849));
+}
+
+.name-item{
+    font-size: 25px;
+    color: #fff;
+}
+.version-item{
+    font-size: 15px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-weight: 500;
+}
+.version-item span{
+    padding-right: 2px;
+    font-size: 20px;
+}
+.line{
+    width: 100%;
+    height: 2px;
+    background-color: #ffffff73;
+    border-radius: 4px;
+    margin: 10px auto;
+}
+.line-run{
+    width: 0%;
+    height: 100%;
+    border-radius: 4px;
+    background-color: #6200ea;
+}
+.btn_install_select{
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.418);
+    border-radius: 7px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 18px;
+}
+/* paginations */
+.paginations {
+    width: 100%;
+    height: 70px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.089), rgba(0, 0, 0, 0.74));
+}
+
+/* pagination */
+#pagination-home ul{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#pagination-home ul li.paginationjs-page{
+    background-color: transparent;
+    border-radius: 0;
+    padding: 5px;
+    height: 100%;
+}
+#pagination-home ul li.paginationjs-page a{
+    background-color: rgba(102, 31, 255, 0.445);
+    border-radius: 4px;
+    padding: 0px 10px;
+}
+#pagination-home ul li.active a{
+    background-color: rgb(101, 31, 255);
+}
+
+#pagination-home ul li.paginationjs-page a{
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+}
+
+#pagination-home ul li.paginationjs-prev, #pagination-home ul li.paginationjs-next{
+    height: 100%;
+    padding: 5px 0;
+}
+
+
+#pagination-home ul li.paginationjs-prev a, #pagination-home ul li.paginationjs-next a{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+}
+#pagination-home ul li.paginationjs-prev.disabled a, #pagination-home ul li.paginationjs-next.disabled a{
+    color: #b3b3b3;
+    cursor: not-allowed;
+}
+
+#pagination-home .btn-back{
+    font-size: 30px;
+}
+#pagination-home .btn-next{
+    font-size: 30px;
+}
+@media (max-width: 1426px){
+    .app_home{
+        width: 20%;
+    }
+}
+@media (max-width: 1120px){
+    .app_home{
+        width: 25%;
+    }
+}
+@media (max-width: 937px){
+    .app_home{
+        width: 33.33333333333333%;
+    }
+}
+@media (max-width: 678px){
+    .app_home{
+        width: 50%;
+    }
+}
+
+/* Width */
+::-webkit-scrollbar {
+    width: 7px;
+    height: 3px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #222;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 8px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
