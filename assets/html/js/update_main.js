@@ -241,7 +241,7 @@ kit.onDOMReady(async () => {
 
                 // Install
                 if (update) {
-                    await copyFiles(path.resolve(__dirname, "../../", "temp", json_config.update.name), path.resolve(__dirname, "../../", "pre"), (progress, path_file_copy, status) => {
+                    await copyFiles(path.resolve(__dirname, "../../", "temp", json_config.update.name), path.resolve(__dirname, "../../"), (progress, path_file_copy, status) => {
                         if (status !== "finish") {
                             title_banner.text(getItems(path_file_copy.split("\\"), 1, 4, true));
                             $(".progres_update_run").css({ width: `${progress.toFixed(0)}%` });
