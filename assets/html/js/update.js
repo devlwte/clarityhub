@@ -191,6 +191,10 @@ kit.onDOMReady(async () => {
         // configuracion
         let config = path.join(folders.userData, "data", "json", "config.json");
         let json_config = await openFileJson(config, true, {
+            update: {
+                repo: "https://github.com/devlwte/clarityhub.git",
+                name: "update_main"
+            },
             termsandconditions: {}
         });
 
