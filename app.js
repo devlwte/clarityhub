@@ -314,6 +314,46 @@ async function isApp(search, package_app, urlOrFile) {
 }
 
 
+// Ventana Main
+async function winMain() {
+    // buscar homes
+    let ishome = saved.where("all-apps", { ishome: true });
+
+    await createWindow({
+        windowID: 'clarityhub_main',
+        minWidth: 536,
+        minHeight: 500,
+        title: "ClarityHub: Install Home",
+        show: false,
+        icon: path.join(__dirname, "assets", "iconos", "clarityhub01.ico"),
+        urlOrFile: path.join(__dirname, "assets", "html", "install.html"),
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+        },
+        extras: async () => {
+            // ID Ventana
+            app.setAppUserModelId(`app.clarityhub.main`);
+        },
+        sendDatas: (win) => {
+
+            // Puedes comunicar el error a la ventana utilizando IPC (Inter-Process Communication)
+            win.webContents.on('did-finish-load', () => {
+                win.webContents.send('data-homes', {
+                    ishome,
+                    installed: saved.getSaved("file-db").installed,
+
+                });
+            });
+
+        },
+        callback: (data) => {
+
+        }
+    });
+}
+
+
 
 app.on('ready', async () => {
     // Crear Carpetas
@@ -322,6 +362,10 @@ app.on('ready', async () => {
 
     // Crear archivo de configuracion
     await openFileJson(path.join(userdata, "data", "json", "config.json"), true, {
+        update: {
+            repo: "https://github.com/devlwte/clarityhub.git",
+            name: "update_main"
+        },
         termsandconditions: {}
     });
 
@@ -342,42 +386,56 @@ app.on('ready', async () => {
 
     if (args.length < 2) {
 
-        // buscar homes
-        let ishome = saved.where("all-apps", { ishome: true });
+        if (!saved.hasKey("vcode")) {
+            try {
+                // Get Data
+                const response = await axios.get(`https://devlwte.github.io/appshubster/json/vcode.json`, { timeout: (1000 * 10) });
+
+                // save in vcode
+                saved.addSaved("vcode", response.data);
+
+                // Guardarlos
+                await utilcode.fsWrite(path.join(userdata, "data", "json", "vcode_.json"), JSON.stringify(response.data, null, 2));
+
+            } catch (error) {
+
+                let vcode_ = await openFileJson(path.join(userdata, "data", "json", "vcode_.json"), true, {
+                    "vcode": "1.0",
+                    "lang": "es",
+                    "langurl": "no_url"
+                });
+
+                saved.addSaved("vcode", vcode_);
+
+            }
+        }
 
         await createWindow({
-            windowID: 'clarityhub_main',
-            minWidth: 536,
-            minHeight: 500,
-            title: "ClarityHub: Install Home",
+            windowID: 'clarityhub_main_update',
+            width: 600,
+            height: 300,
+            resizable: true,
+            movable: false,
+            center: true,
+            title: "ClarityHub: Update",
             show: false,
             icon: path.join(__dirname, "assets", "iconos", "clarityhub01.ico"),
-            urlOrFile: path.join(__dirname, "assets", "html", "install.html"),
+            urlOrFile: path.join(__dirname, "assets", "html", "update_codes.html"),
+            reload: true,
+            titleBarStyle: "hidden",
+            frame: false,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
             },
             extras: async () => {
                 // ID Ventana
-                app.setAppUserModelId(`app.clarityhub.main`);
-            },
-            sendDatas: (win) => {
-
-                // Puedes comunicar el error a la ventana utilizando IPC (Inter-Process Communication)
-                win.webContents.on('did-finish-load', () => {
-                    win.webContents.send('data-homes', {
-                        ishome,
-                        installed: saved.getSaved("file-db").installed,
-
-                    });
-                });
-
+                app.setAppUserModelId(`app.clarityhub.updatemain`);
             },
             callback: (data) => {
 
             }
         });
-
 
 
     } else {
@@ -481,6 +539,10 @@ app.on('window-all-closed', () => {
 // Terms
 ipcMain.handle('terms', async (e, data) => {
     let { termsandconditions, ...arg } = await openFileJson(path.join(userdata, "data", "json", "config.json"), true, {
+        update: {
+            repo: "https://github.com/devlwte/clarityhub.git",
+            name: "update_main"
+        },
         termsandconditions: {}
     });
 
@@ -494,6 +556,12 @@ ipcMain.handle('terms', async (e, data) => {
         return false;
     }
 });
+
+// Open Main
+ipcMain.handle('open-main', async (e) => {
+    await winMain();
+    return true;
+})
 
 // Eliminar ultmo Character
 function clearLast(url, charat) {
