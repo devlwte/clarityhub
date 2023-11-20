@@ -179,6 +179,46 @@ class UtilCodes {
 
         return this.randoChar(6) + result;
     }
+
+    async openFile(options = {}) {
+        if (this.electron) {
+            const { dialog, BrowserWindow } = this.electron;
+            try {
+                const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
+                    properties: ['openFile'],
+                    ...options,
+                });
+                return result.filePaths[0] || null;
+            } catch (error) {
+                console.error('Error opening file dialog:', error);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    async openFolder({ dialog, BrowserWindow }) {
+        return new Promise((resolve, reject) => {
+            const mainWindow = BrowserWindow.getFocusedWindow();
+
+            dialog.showOpenDialog(mainWindow, {
+                properties: ['openDirectory'],
+            }).then((result) => {
+                if (result.canceled) {
+
+                    const cancelError = new Error('Folder search was canceled');
+                    cancelError.title = 'Search canceled';
+                    reject(cancelError);
+                } else {
+                    const selectedDirectory = result.filePaths[0];
+                    resolve(selectedDirectory);
+                }
+            }).catch((error) => {
+                reject(error);
+            });
+        });
+    }
 }
 
 module.exports = new UtilCodes();
