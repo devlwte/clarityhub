@@ -5,7 +5,7 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
 // Electron
-const { app, ipcMain, BrowserWindow, shell, Menu } = require("electron")
+const { app, ipcMain, dialog, BrowserWindow, shell, Menu } = require("electron")
 const windowStateKeeper = require("electron-window-state");
 
 const ConsoleLogger = require('./modules/console');
@@ -40,9 +40,9 @@ const fsextra = require('fs-extra');
 // prompts
 const prompts = require('./modules/prompts');
 
-
-
-
+// Store
+const Store = require('electron-store');
+const store = new Store();
 
 // Crear Carpetas
 async function setFolders(raiz, ruta) {
@@ -107,6 +107,10 @@ async function loadApps() {
     }
 
     saved.addSaved("file-db", parsejson);
+}
+
+async function storageFilesJson(name) {
+    await openFileJson(path.join(userdata, "data", "json", name + ".json"), true, {});
 }
 
 let mainWindow;
@@ -193,7 +197,7 @@ const updateObj = (array, key, value, update) => {
 
 // Crear Ventanas
 const createWindow = async (config = {}) => {
-    const { windowID, urlOrFile, reload = true, webPreferences = {}, extras = false, sendDatas = false, callback = false, ...arg } = config;
+    const { windowID, urlOrFile, reload = true, webPreferences = {}, extras = false, sendDatas = false, readyshow = false, callback = false, ...arg } = config;
 
     // State ventana
     let state = stateWin(windowID);
@@ -249,6 +253,11 @@ const createWindow = async (config = {}) => {
         const newMenu = Menu.buildFromTemplate(reload ? templateMenu : deleteObj(templateMenu, "role", "reload"));
         mainWin.setMenu(newMenu);
         mainWin.setMenuBarVisibility(false);
+
+        // readyshow
+        if (readyshow) {
+            readyshow(mainWin);
+        }
     });
 
     if (sendDatas) {
@@ -259,6 +268,8 @@ const createWindow = async (config = {}) => {
             sendDatas(mainWin);
         }
     }
+
+
 
     if (callback) {
         const asincronico = isAsync(callback);
@@ -272,6 +283,8 @@ const createWindow = async (config = {}) => {
             });
         }
     }
+
+    return mainWin;
 };
 
 
@@ -297,8 +310,11 @@ async function isApp(search, package_app, urlOrFile) {
     // Verificar si hay una pagina de inicio
     let { homepage = false } = search;
 
+    // storages
+    await storageFilesJson(search.name);
+
     // Inicializador de la app
-    await createWindow({
+    const appwin = await createWindow({
         windowID: search.name,
         minWidth: 536,
         minHeight: 500,
@@ -307,10 +323,24 @@ async function isApp(search, package_app, urlOrFile) {
         icon: path.join(__dirname, "apps", search.name, `${search.name}.ico`),
         urlOrFile: homepage ? clearLast(urlOrFile, "/") + homepage : urlOrFile,
         webPreferences: { ...package_app.webPreferences },
-        callback: (data) => {
-
+        readyshow: ()=>{
+            store.set(`apps.${search.name}`, 'open');
         }
     });
+
+    let hasSentData = false;
+    appwin.webContents.on("did-finish-load", () => {
+        if (!hasSentData) {
+            const allWindows = BrowserWindow.getAllWindows();
+            appwin.webContents.send('data-args', allWindows.length);
+            hasSentData = true;
+        }
+    });
+
+    appwin.on('close', (data) => {
+        store.set(`apps.${search.name}`, 'closed');
+    });
+
 }
 
 
@@ -788,46 +818,6 @@ ipcMain.handle('install-app', async (e, appInfo) => {
     return resp;
 });
 
-// Uninstall
-ipcMain.handle('uninstall-app', async (e, uninstall) => {
-    // Load Apps
-    await loadApps();
-
-    try {
-        // Install in apps is installed
-        let { installed, ...arg } = saved.getSaved("file-db");
-
-        await utilcode.deleteFolder(path.join(__dirname, "apps", uninstall.name));
-        for (let i = 0; i < installed.length; i++) {
-            if (installed[i].ref === uninstall.ref) {
-                installed.splice(i, 1);
-                break;
-            }
-        }
-
-        // Save new data
-        await utilcode.fsWrite(path.join(userdata, "data", "json", "db.json"), JSON.stringify({ ...arg, installed }, null, 2));
-
-        // Load Apps
-        await loadApps();
-
-
-        // Eliminar acceso directo
-        const desktopShortcutPath = path.join(app.getPath('desktop'), `${uninstall.title}.lnk`);
-        if (fs.existsSync(desktopShortcutPath)) {
-            try {
-                await fs.promises.unlink(desktopShortcutPath);
-            } catch (err) {
-                console.error('Something wrong happened removing the file', err)
-            }
-        }
-
-        return true;
-    } catch (error) {
-        return false;
-    }
-})
-
 // Info
 // ipcMain.handle('get-info-module', async (e, name) => {
 //     try {
@@ -871,6 +861,7 @@ async function installModule(name, targetDirectory) {
 }
 
 ipcMain.handle('all-folders', async (e) => {
+    const programsPath = path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs');
     const allFolders = {
         appData: app.getPath('appData'),
         appPath: app.getAppPath(),
@@ -883,6 +874,21 @@ ipcMain.handle('all-folders', async (e) => {
     };
 
     return allFolders;
+});
+
+
+
+// Open Folder
+ipcMain.handle('open-folder', async (e, name, id) => {
+    let result = false;
+    try {
+        let folder = await utilcode.openFolder({ dialog, BrowserWindow });
+        result = folder;
+    } catch (error) {
+        result = false;
+    }
+
+    return result;
 });
 
 // Reload
