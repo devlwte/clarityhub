@@ -465,7 +465,7 @@ kit.onDOMReady(async () => {
             $(".cover").css({ opacity: 0, "background-image": `${fondo}` }).animate({ opacity: 1 }, 500, () => {
                 $(".icono").css({ opacity: 0, marginTop: "-20px", "background-image": `${icono}` }).animate({ opacity: 1, marginTop: 0 }, 400, () => {
                     $(".name_app").html(message.pack.title).css({ opacity: 0, marginTop: "-20px", }).animate({ opacity: 1, marginTop: 0 }, 400);
-                    $(".version_app").html(message.pack.version).css({ opacity: 0, marginTop: "-20px", }).animate({ opacity: 1, marginTop: 0 }, 600, () => {
+                    $(".version_app").html(message.version).css({ opacity: 0, marginTop: "-20px", }).animate({ opacity: 1, marginTop: 0 }, 600, () => {
                         animates($(".btns_show"))
                     });
 
