@@ -1,3 +1,6 @@
+// Electron
+const { dialog, BrowserWindow } = require("electron")
+
 const path = require("path")
 const fs = require("fs")
 const { v4: uuidv4 } = require('uuid');
@@ -181,24 +184,19 @@ class UtilCodes {
     }
 
     async openFile(options = {}) {
-        if (this.electron) {
-            const { dialog, BrowserWindow } = this.electron;
-            try {
-                const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
-                    properties: ['openFile'],
-                    ...options,
-                });
-                return result.filePaths[0] || null;
-            } catch (error) {
-                console.error('Error opening file dialog:', error);
-                return null;
-            }
-        } else {
+        try {
+            const result = await dialog.showOpenDialog(BrowserWindow.getFocusedWindow(), {
+                properties: ['openFile'],
+                ...options,
+            });
+            return result.filePaths[0] || null;
+        } catch (error) {
+            console.error('Error opening file dialog:', error);
             return null;
         }
     }
 
-    async openFolder({ dialog, BrowserWindow }) {
+    async openFolder() {
         return new Promise((resolve, reject) => {
             const mainWindow = BrowserWindow.getFocusedWindow();
 
