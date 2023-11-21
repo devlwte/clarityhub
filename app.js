@@ -102,6 +102,7 @@ async function loadApps() {
             saved.addSaved("all-apps", apps_);
         }
     }
+    
     if (saved.hasKey("file-db")) {
         saved.removeSaved("file-db");
     }
@@ -372,7 +373,6 @@ async function winMain() {
                 win.webContents.send('data-homes', {
                     ishome,
                     installed: saved.getSaved("file-db").installed,
-
                 });
             });
 
