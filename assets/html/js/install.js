@@ -151,6 +151,11 @@ const btn_select = ($btn, text, css = {}, callback = false) => {
     });
 };
 
+// Eliminar Objectos
+const deleteObj = (arrays, key, value) => {
+    return arrays.filter((elemento) => elemento[key] !== value);
+};
+
 
 kit.onDOMReady(async () => {
     // All folders
@@ -281,6 +286,21 @@ kit.onDOMReady(async () => {
                                         });
                                     });
 
+                                    // add file installed
+                                    let { installed, ...args } = await openFileJson(path.join(folders.userData, "data", "json", "db.json"), true, { installed: [] });
+
+                                    // eliminar elemento
+                                    let elms = deleteObj(installed, "ref", buscar.ref);
+                                    installed = elms;
+                                    installed.push({
+                                        ref: buscar.ref,
+                                        name: buscar.name,
+                                        version: buscar.version,
+                                        dev: buscar.dev
+                                    });
+
+                                    // Guardarlos
+                                    await utilcode.fsWrite(path.join(folders.userData, "data", "json", "db.json"), JSON.stringify({ ...args, installed }, null, 2));
                                 }
                             }
                         });
