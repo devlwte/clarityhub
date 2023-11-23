@@ -447,29 +447,29 @@ class CodeUtilKit {
 
   fileDropZone(selector, onFilesDropped) {
     const dropZoneElement = document.querySelector(selector);
-  
+
     if (!dropZoneElement) {
       return;
     }
-  
+
     // Evitar que el navegador maneje el evento por defecto
     dropZoneElement.addEventListener("dragover", (event) => {
       event.preventDefault();
-      
+
       // Agregar un estilo personalizado durante el arrastre
       dropZoneElement.classList.add("drag-over");
     });
-  
+
     // Restaurar el estilo cuando se abandona la zona de arrastre
     dropZoneElement.addEventListener("dragleave", () => {
       dropZoneElement.classList.remove("drag-over");
     });
-  
+
     // Al soltar los archivos, ejecutar la función proporcionada
     dropZoneElement.addEventListener("drop", (event) => {
       event.preventDefault();
       dropZoneElement.classList.remove("drag-over");
-  
+
       const files = event.dataTransfer.files;
       if (typeof onFilesDropped === "function") {
         onFilesDropped(files);
@@ -601,6 +601,26 @@ class CodeUtilKit {
     }
 
     return { ...{ pathuri: `${datauri.origin + datauri.pathname}` }, ...queryParams };
+  }
+
+  searchParams(paramsurl) {
+    const params = new URLSearchParams(paramsurl);
+
+    const queryParams = {};
+
+    for (const [key, value] of params) {
+      if (queryParams[key]) {
+        if (Array.isArray(queryParams[key])) {
+          queryParams[key].push(value);
+        } else {
+          queryParams[key] = [queryParams[key], value];
+        }
+      } else {
+        queryParams[key] = value;
+      }
+    }
+
+    return { ...queryParams }
   }
 
 

@@ -43,7 +43,12 @@ async function handleMenuAction(evt, data) {
       }
 
       // Quitar de anclas y desktop
-      deleteAnclas(fun.getAttribute("data-ref"), fun.getAttribute("data-name"), fun.getAttribute("data-title"))
+      deleteAnclas(fun.getAttribute("data-ref"), fun.getAttribute("data-name"), fun.getAttribute("data-title"));
+
+      // remove of installed
+      await _ajax("/removejson", "POST", {
+        ref: fun.getAttribute("data-ref")
+      });
 
     } catch (error) {
       console.log(error);
@@ -60,7 +65,7 @@ async function handleMenuAction(evt, data) {
     newAccLnk(fun.getAttribute("data-ref"), false, saved.getSaved("folders").desktop)
   }
 
-  
+
 
 
 }
