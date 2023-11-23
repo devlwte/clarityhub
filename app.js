@@ -85,29 +85,62 @@ function stateWin(windowId) {
     });
 }
 
+// Conexion
+async function isInternetConnected() {
+    try {
+        await axios.get('https://devlwte.github.io/appshubster/json/vcode.json');
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 // Cargar todas las apps
 async function loadApps() {
+    // DB
     let parsejson = await openFileJson(path.join(userdata, "data", "json", "db.json"), true, { installed: [] });
-    if (!saved.hasKey("all-apps")) {
-        try {
-            // Obtener los datos de las apps
-            const response = await axios.get(`https://devlwte.github.io/appshubster/json/apps.json`, { timeout: (1000 * 10) });
-            saved.addSaved("all-apps", response.data);
-
-            // Guardarlos
-            await utilcode.fsWrite(path.join(userdata, "data", "json", "apps_.json"), JSON.stringify(response.data, null, 2));
-        } catch (error) {
-
-            let apps_ = await openFileJson(path.join(userdata, "data", "json", "apps_.json"), true, { apps: [] });
-            saved.addSaved("all-apps", apps_);
-        }
-    }
-    
     if (saved.hasKey("file-db")) {
         saved.removeSaved("file-db");
     }
 
     saved.addSaved("file-db", parsejson);
+
+    // verificar internet
+    const isConex = await isInternetConnected();
+    if (!isConex) {
+        let apps_ = await openFileJson(path.join(userdata, "data", "json", "apps_.json"), true, { apps: [] });
+        saved.addSaved("all-apps", apps_);
+        return;
+    }
+    if (!saved.hasKey("all-apps")) {
+        try {
+            // Obtener los datos de las apps
+            const response = await axios.get(`https://mainlw.000webhostapp.com/clarityhub/php/operations.php`, {
+                timeout: (1000 * 10),
+                params: {
+                    action: 'getAllArray',
+                    tableName: "apps",
+                    data: {}
+                }
+            });
+
+            if (response.data.title == "exito") {
+                saved.addSaved("all-apps", response.data.message);
+
+                // Guardarlos
+                await utilcode.fsWrite(path.join(userdata, "data", "json", "apps_.json"), JSON.stringify(response.data.message, null, 2));
+            } else {
+                let apps_ = await openFileJson(path.join(userdata, "data", "json", "apps_.json"), true, []);
+                saved.addSaved("all-apps", apps_);
+            }
+
+        } catch (error) {
+
+            let apps_ = await openFileJson(path.join(userdata, "data", "json", "apps_.json"), true, []);
+            saved.addSaved("all-apps", apps_);
+        }
+    }
+
 }
 
 async function storageFilesJson(name) {
@@ -321,10 +354,10 @@ async function isApp(search, package_app, urlOrFile) {
         minHeight: 500,
         title: search.title,
         show: false,
-        icon: path.join(__dirname, "apps", search.name, `${search.name}.ico`),
+        icon: path.join(__dirname, "apps", search.name, `icono.ico`),
         urlOrFile: homepage ? clearLast(urlOrFile, "/") + homepage : urlOrFile,
         webPreferences: { ...package_app.webPreferences },
-        readyshow: ()=>{
+        readyshow: () => {
             store.set(`apps.${search.name}`, 'open');
         }
     });
@@ -662,7 +695,7 @@ ipcMain.handle('open-app', async (e, data) => {
         ...existingShortcut,
         args: [data.ref, data.name].join(" "),
         description: data.dcp,
-        icon: path.resolve(__dirname, "apps", data.name, `${data.name}.ico`),
+        icon: path.resolve(__dirname, "apps", data.name, `icono.ico`),
         appUserModelId: "app." + data.name,
         iconIndex: 0
     };
